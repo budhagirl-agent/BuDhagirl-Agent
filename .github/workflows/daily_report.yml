@@ -1,0 +1,48 @@
+# .github/workflows/daily_report.yml
+# Runs every day at 01:00 UTC (06:00 PKT) — fetches yesterday's data
+
+name: Daily Amazon Reporter
+
+on:
+  schedule:
+    - cron: '0 1 * * *'      # 1am UTC = 6am PKT
+  workflow_dispatch:          # allow manual trigger from GitHub UI
+
+jobs:
+  run-reporter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Write Firebase credentials file
+        run: echo '${{ secrets.FIREBASE_CREDS_JSON }}' > firebase_creds.json
+
+      - name: Run daily reporter
+        run: python daily_reporter.py --run-once
+        env:
+          SP_LWA_APP_ID:                ${{ secrets.SP_LWA_APP_ID }}
+          SP_LWA_SECRET:                ${{ secrets.SP_LWA_SECRET }}
+          ADS_CLIENT_ID:                ${{ secrets.ADS_CLIENT_ID }}
+          ADS_CLIENT_SECRET:            ${{ secrets.ADS_CLIENT_SECRET }}
+          BUDHAGIRL_SP_REFRESH_TOKEN:   ${{ secrets.BUDHAGIRL_SP_REFRESH_TOKEN }}
+          BUDHAGIRL_ADS_REFRESH_TOKEN:  ${{ secrets.BUDHAGIRL_ADS_REFRESH_TOKEN }}
+          BUDHAGIRL_ADS_PROFILE_ID:     ${{ secrets.BUDHAGIRL_ADS_PROFILE_ID }}
+          LATIKA_SP_REFRESH_TOKEN:      ${{ secrets.LATIKA_SP_REFRESH_TOKEN }}
+          LATIKA_ADS_REFRESH_TOKEN:     ${{ secrets.LATIKA_ADS_REFRESH_TOKEN }}
+          LATIKA_ADS_PROFILE_ID:        ${{ secrets.LATIKA_ADS_PROFILE_ID }}
+          HELIXAL_SP_REFRESH_TOKEN:     ${{ secrets.HELIXAL_SP_REFRESH_TOKEN }}
+          HELIXAL_ADS_REFRESH_TOKEN:    ${{ secrets.HELIXAL_ADS_REFRESH_TOKEN }}
+          HELIXAL_ADS_PROFILE_ID:       ${{ secrets.HELIXAL_ADS_PROFILE_ID }}
+          FIREBASE_DB_URL:              ${{ secrets.FIREBASE_DB_URL }}
+          FIREBASE_CRED_PATH:           firebase_creds.json
